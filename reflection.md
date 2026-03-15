@@ -25,13 +25,18 @@ No, it has not changed since creating the UML.
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+The scheduler considers preferences and time available to the Owner when it comes to creating its plans. 
 - How did you decide which constraints mattered most?
+I decided based on what the user would place the most value on in terms of constraining. Time is a key factor compared to preferences, as the
+time they have available is influenced by many outside factors that at times can't be altered. 
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
+The scheduler prioritizes high value tasks first before preferred tasks, and only adds tasks if they fit the time.
 - Why is that tradeoff reasonable for this scenario?
-
+The trade off is reasonable since we are trying to set the schedule based on what tasks should be completed first since 
+care planning needs to be quick.
 ---
 
 ## 3. AI Collaboration
