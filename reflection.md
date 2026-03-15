@@ -9,13 +9,15 @@
 **a. Initial design**
 
 - Briefly describe your initial UML design.
+The initial UML consists of 4 main candid classes: Owner which can have many Pets, who can have many Tasks associated with them. Schedule aggregates Owner + Pet to produce a task plan. 
 - What classes did you include, and what responsibilities did you assign to each?
+Owner, holds information about the pet owner such as name and availability, as well as pets. Pets has information about the pet such as species, name, and tasks associated. Task has title, priority, and description of what the task should do.
 
 **b. Design changes**
 
 - Did your design change during implementation?
+No, it has not changed since creating the UML.
 - If yes, describe at least one change and why you made it.
-
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
