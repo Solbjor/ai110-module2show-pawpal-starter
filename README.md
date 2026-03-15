@@ -89,7 +89,6 @@ care planning needs to be quick.
 Add task was implemented and saves to the schedule.
 
 Add task click -> Task(...) -> selected_pet.add_task(...) -> table from selected_pet.tasks
+
+![alt text](image.png)
 ---
-
-
-
