@@ -2,6 +2,10 @@
 
 ## 1. System Design
 
+- A user should be able to add a pet to their pet list
+- A user should be able to create a task for a pet.
+- A user user should be able to visualize all current tasks. 
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
