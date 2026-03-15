@@ -84,3 +84,12 @@ The scheduler prioritizes high value tasks first before preferred tasks, and onl
 The trade off is reasonable since we are trying to set the schedule based on what tasks should be completed first since 
 care planning needs to be quick.
 ---
+
+# Tracing Add Task:
+Add task was implemented and saves to the schedule.
+
+Add task click -> Task(...) -> selected_pet.add_task(...) -> table from selected_pet.tasks
+---
+
+
+
