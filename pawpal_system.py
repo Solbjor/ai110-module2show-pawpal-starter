@@ -20,11 +20,15 @@ class Task:
         duration_minutes: int,
         priority: str,   # "low" | "medium" | "high"
         category: str,   # "walk" | "feeding" | "meds" | "grooming" | "enrichment" | "appointment"
+        start_minute: int | None = None,
+        recurrence: str = "none",  # "none" | "daily"
     ) -> None:
         self.title = title
         self.duration_minutes = duration_minutes
         self.priority = priority
         self.category = category
+        self.start_minute = start_minute
+        self.recurrence = recurrence
 
     def to_dict(self) -> dict:
         return {
@@ -32,6 +36,8 @@ class Task:
             "duration_minutes": self.duration_minutes,
             "priority": self.priority,
             "category": self.category,
+            "start_minute": self.start_minute,
+            "recurrence": self.recurrence,
         }
 
 
@@ -79,6 +85,49 @@ class Scheduler:
         self.owner = owner
         self.pet = pet
         self.plan: list[Task] = []
+        self.skipped_tasks: list[str] = []
+
+    def _expand_recurring_tasks(self, tasks: list[Task], day_index: int = 0) -> list[Task]:
+        """Return tasks that apply to the target day based on simple recurrence rules."""
+        expanded: list[Task] = []
+        for task in tasks:
+            recurrence = task.recurrence.lower()
+            if recurrence == "none":
+                expanded.append(task)
+            elif recurrence == "daily":
+                # Daily tasks are included for every day_index.
+                expanded.append(task)
+        return expanded
+
+    def _filter_tasks(self, tasks: list[Task]) -> list[Task]:
+        """Remove malformed or unsupported tasks before scheduling."""
+        filtered: list[Task] = []
+        for task in tasks:
+            if task.duration_minutes <= 0:
+                self.skipped_tasks.append(f"Skipped {task.title}: invalid duration")
+                continue
+            if task.priority.lower() not in {"high", "medium", "low"}:
+                self.skipped_tasks.append(f"Skipped {task.title}: invalid priority")
+                continue
+            filtered.append(task)
+        return filtered
+
+    def _has_conflict(self, candidate: Task, scheduled: list[Task], sequential_cursor: int) -> bool:
+        """Detect overlap with already scheduled fixed-time tasks."""
+        candidate_start = candidate.start_minute
+        if candidate_start is None:
+            candidate_start = sequential_cursor
+        candidate_end = candidate_start + candidate.duration_minutes
+
+        for existing in scheduled:
+            existing_start = existing.start_minute
+            if existing_start is None:
+                continue
+            existing_end = existing_start + existing.duration_minutes
+            # Two intervals overlap only when each starts before the other ends.
+            if candidate_start < existing_end and existing_start < candidate_end:
+                return True
+        return False
 
     def generate(self) -> list[Task]:
         """Select and order tasks within the owner's time budget."""
@@ -95,21 +144,35 @@ class Scheduler:
                     best_score = min(best_score, pref_index)
             return best_score
 
+        self.skipped_tasks = []
+        recurring_expanded = self._expand_recurring_tasks(self.pet.tasks)
+        filtered_tasks = self._filter_tasks(recurring_expanded)
+
         ordered_tasks = sorted(
-            self.pet.tasks,
+            filtered_tasks,
             key=lambda task: (
                 priority_rank.get(task.priority, 99),
                 preference_score(task),
+                task.start_minute if task.start_minute is not None else 10**9,
                 task.duration_minutes,
             ),
         )
 
         remaining_minutes = self.owner.available_minutes
         self.plan = []
+        sequential_cursor = 0
         for task in ordered_tasks:
-            if task.duration_minutes <= remaining_minutes:
-                self.plan.append(task)
-                remaining_minutes -= task.duration_minutes
+            if self._has_conflict(task, self.plan, sequential_cursor):
+                self.skipped_tasks.append(f"Skipped {task.title}: time conflict")
+                continue
+            if task.duration_minutes > remaining_minutes:
+                self.skipped_tasks.append(f"Skipped {task.title}: not enough time")
+                continue
+
+            self.plan.append(task)
+            remaining_minutes -= task.duration_minutes
+            if task.start_minute is None:
+                sequential_cursor += task.duration_minutes
         return self.plan
 
     def explain(self) -> str:
@@ -125,6 +188,9 @@ class Scheduler:
             explanation.append(
                 f"{index}. {task.title} ({task.duration_minutes} min, priority: {task.priority})"
             )
+        if self.skipped_tasks:
+            explanation.append("Skipped tasks:")
+            explanation.extend(self.skipped_tasks)
         return "\n".join(explanation)
 
 
