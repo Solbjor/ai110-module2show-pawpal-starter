@@ -93,14 +93,16 @@ Add task click -> Task(...) -> selected_pet.add_task(...) -> table from selected
 ![alt text](image.png)
 ---
 
-Algorithms picked for phase 4:
+## Algorithms picked for phase 4
 
 Sorting algorithm: multi-key task ordering by priority, preference match, fixed start time, then duration.
 Conflict detection algorithm: interval overlap check for fixed-time tasks using start/end minute ranges.
 
-Edge Case debugged:
-I debugged an edge case where two fixed-time tasks were back-to-back, and they were marked conflicting by the scheduler. The cause was an "inclusive" overlap check plus sort ordering that could schedule 
-tasks out of sequential order. I fixed it by using strict interval overlap logic and sorting fixed-time tasks by start time first.
+## Edge Case debugged
+
+- I debugged an edge case where two fixed-time tasks were back-to-back, and they were marked conflicting by the scheduler. The
+cause was an "inclusive" overlap check plus sort ordering that could schedule tasks out of sequential order. I fixed it by using 
+strict interval overlap logic and sorting fixed-time tasks by start time first.
 ---
 
 ## 3. AI Collaboration
